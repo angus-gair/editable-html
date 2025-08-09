@@ -297,26 +297,50 @@
       }
     });
     
-    // Function to load resume HTML
+    // Function to load resume HTML with file selection
     async function loadResume() {
-      try {
-        const response = await fetch('angus-james-resume.html');
-        const html = await response.text();
+      // Create file input element
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = '.html';
+      fileInput.style.display = 'none';
+      
+      // Add to document temporarily
+      document.body.appendChild(fileInput);
+      
+      // Handle file selection
+      fileInput.onchange = async function(event) {
+        const file = event.target.files[0];
+        if (!file) {
+          document.body.removeChild(fileInput);
+          return;
+        }
         
-        // Extract just the content inside the body
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const bodyContent = doc.body.innerHTML;
-        const styles = doc.querySelector('style') ? doc.querySelector('style').innerHTML : '';
-        
-        // Load content into editor
-        editor.setComponents(bodyContent);
-        editor.setStyle(styles);
-        
-        alert('Resume loaded successfully!');
-      } catch (error) {
-        alert('Error loading resume: ' + error.message);
-      }
+        try {
+          // Read the selected file
+          const html = await file.text();
+          
+          // Extract just the content inside the body
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const bodyContent = doc.body.innerHTML;
+          const styles = doc.querySelector('style') ? doc.querySelector('style').innerHTML : '';
+          
+          // Load content into editor
+          editor.setComponents(bodyContent);
+          editor.setStyle(styles);
+          
+          alert(`Resume "${file.name}" loaded successfully!`);
+        } catch (error) {
+          alert('Error loading resume: ' + error.message);
+        } finally {
+          // Clean up
+          document.body.removeChild(fileInput);
+        }
+      };
+      
+      // Trigger file selection dialog
+      fileInput.click();
     }
     
     // Function to save HTML to localStorage
